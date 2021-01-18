@@ -1,0 +1,35 @@
+pool:
+  name: Azure Pipelines
+  demands: npm
+
+steps:
+- task: AmazonWebServices.aws-vsts-tools.AWSCLI.AWSCLI@1
+  displayName: 'AWS CLI: CloudFront'
+  inputs:
+    awsCredentials: 'AWS-Connection-Admin'
+    regionName: 'us-east-1'
+    awsCommand: cloudfront
+    awsSubCommand: 'create-invalidation'
+    awsArguments: '--distribution-id E4XC5HQET8XIF --paths "/*"'
+    failOnStandardError: false
+
+- task: AmazonWebServices.aws-vsts-tools.AWSCLI.AWSCLI@1
+  displayName: 'AWS CLI: S3'
+  inputs:
+    awsCredentials: 'AWS-Connection-Admin'
+    regionName: 'us-east-1'
+    awsCommand: s3
+    awsSubCommand: rm
+    awsArguments: 's3://encuentrame.lavm.site --recursive'
+    failOnStandardError: false
+
+steps:
+- task: AmazonWebServices.aws-vsts-tools.S3Upload.S3Upload@1
+  displayName: 'S3 Upload: encuentrame.lavm.site'
+  inputs:
+    awsCredentials: 'AWS-Connection-Admin'
+    regionName: 'us-east-1'
+    bucketName: encuentrame.lavm.site
+    sourceFolder: '$(System.DefaultWorkingDirectory)/_LAVM001-PI1-Encuentrame-App-Front-CI/encuentrame-artifacts/encuentrame-app'
+    filesAcl: 'public-read'
+    createBucket: true
